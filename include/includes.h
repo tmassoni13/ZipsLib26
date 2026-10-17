@@ -5,16 +5,11 @@
 */
 
 #pragma once 
-#include "pros/adi.hpp"
 #include "pros/motor_group.hpp"
 
 extern pros::MotorGroup leftDrive;
 extern pros::MotorGroup rightDrive;
-extern pros::MotorGroup intake;
 extern pros::Controller master;
-extern pros::ADIDigitalOut lift;
-extern pros::ADIDigitalOut gate;
-extern pros::ADIDigitalOut dropdown;
 
 /**
  * @brief Runs the match autonomous routine.
