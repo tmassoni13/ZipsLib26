@@ -6,12 +6,12 @@
 */
 
 #include "Chassis/ChassisController.hpp"
+#include "Chassis/PID.hpp"
 #include "Chassis/Tuning.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <map>
 #include <cmath>
-#include <optional>
 
 namespace zips {
 
@@ -36,7 +36,7 @@ static pros::MotorGroup* rightMotors = nullptr;
 static Pose2D pose = {0, 0, 0};
 static RobotConstants constants;
 
-// Local OTOS mount offsets (tuning removed per request)
+// Local OTOS mount offsets
 static double otosOffsetForward = 0.0; // inches
 static double otosOffsetLeft = 0.0;    // inches
 
@@ -282,72 +282,6 @@ void ChassisController::turnTo(double targetHeading, const MotionOptions& option
   turnTo(targetHeading, 127.0, options);
 }
 
-struct PID {
-  double kp = 0, ki = 0, kd = 0;
-  double starti = 0;
-
-  double settle_error = 0;
-  int settle_time = 0;   // ms
-  int timeout = 0;       // ms (0 = no timeout)
-
-  double accumulated_error = 0;
-  double previous_error = 0;
-
-  int time_spent_settled = 0; // ms
-  int time_spent_running = 0; // ms
-
-  // Creates a PID controller with default gains and settle settings.
-  PID() = default;
-
-  // Creates a PID controller with settle and timeout settings.
-  PID(double /*target_unused*/,
-      double Kp, double Ki, double Kd, double startI,
-      double settleErr, int settleTimeMs, int timeoutMs)
-    : kp(Kp), ki(Ki), kd(Kd), starti(startI),
-      settle_error(settleErr),
-      settle_time(settleTimeMs),
-      timeout(timeoutMs) {}
-
-  // Creates a PID controller without settle and timeout settings.
-  PID(double /*initial_error_unused*/,
-      double Kp, double Ki, double Kd, double startI)
-    : kp(Kp), ki(Ki), kd(Kd), starti(startI) {}
-
-  // Computes the PID output for the provided error.
-  double compute(double error) {
-    if (std::fabs(error) < starti) {
-      accumulated_error += error;
-    }
-    if ((error > 0 && previous_error < 0) ||
-        (error < 0 && previous_error > 0)) {
-      accumulated_error = 0;
-    }
-
-    double output =
-      kp * error +
-      ki * accumulated_error +
-      kd * (error - previous_error);
-
-    previous_error = error;
-
-    if (std::fabs(error) < settle_error) {
-      time_spent_settled += 10;
-    } else {
-      time_spent_settled = 0;
-    }
-
-    time_spent_running += 10;
-    return output;
-  }
-
-  // Returns whether the PID controller has settled or timed out.
-  bool is_settled() const {
-    if (timeout != 0 && time_spent_running > timeout) return true;
-    if (time_spent_settled > settle_time) return true;
-    return false;
-  }
-};
-
 // Drives a distance while holding the current heading.
 void ChassisController::driveDistance(float distance) {
   driveDistance(distance,
@@ -531,8 +465,7 @@ void ChassisController::driveDistance(float distance,
 
   if (options.onStart) options.onStart();
 
-  PID drivePID(distance,
-               drive_kp, drive_ki, drive_kd, drive_starti,
+  PID drivePID(drive_kp, drive_ki, drive_kd, drive_starti,
                drive_settle_error,
                (int)drive_settle_time,
                (int)drive_timeout);
@@ -547,10 +480,7 @@ void ChassisController::driveDistance(float distance,
     return deg;
   };
 
-  PID headingPID(
-    reduce_negative_180_to_180(heading - get_absolute_heading()),
-    heading_kp, heading_ki, heading_kd, heading_starti
-  );
+  PID headingPID(heading_kp, heading_ki, heading_kd, heading_starti);
 
   const double start_avg_in =
     (degreesToInches(leftMotors->get_position(),  constants.wheelDiameter) +
