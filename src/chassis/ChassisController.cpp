@@ -32,9 +32,12 @@ ChassisController chassis;
 // ========== PRIVATE MEMBERS ==========
 static pros::MotorGroup* leftMotors = nullptr;
 static pros::MotorGroup* rightMotors = nullptr;
+static pros::Imu* headingImu = nullptr;
 
 static Pose2D pose = {0, 0, 0};
 static RobotConstants constants;
+static HeadingSource headingSource = HeadingSource::Otos;
+static double imuHeadingOffset = 0.0;
 
 // Local OTOS mount offsets
 static double otosOffsetForward = 0.0; // inches
@@ -89,6 +92,20 @@ static double wrapDegrees(double angleDeg) {
   return std::remainder(angleDeg, 360.0);
 }
 
+// Reads heading from the selected sensor using the OTOS CCW-positive convention.
+static double readHeading() {
+  if (headingSource == HeadingSource::Imu && headingImu != nullptr &&
+      !headingImu->is_calibrating()) {
+    const double rotation = headingImu->get_rotation();
+    if (std::isfinite(rotation)) {
+      // V5 IMU rotation is clockwise-positive; chassis heading is CCW-positive.
+      return wrapDegrees(imuHeadingOffset - rotation);
+    }
+  }
+
+  return pose.theta;
+}
+
 // ===================== OTOS -> ROBOT CENTER POSE =====================
 // sensorPose is in project frame:
 //   +Y forward, +X right, theta=0 along +Y, CCW+
@@ -122,6 +139,29 @@ void ChassisController::setRobotConstants(const RobotConstants& rc) {
   constants = rc;
 }
 
+// Selects OTOS or a V5 IMU as the heading feedback source.
+void ChassisController::setHeadingSource(HeadingSource source, pros::Imu* imu) {
+  if (source == HeadingSource::Imu && imu == nullptr) {
+    headingSource = HeadingSource::Otos;
+    headingImu = nullptr;
+    return;
+  }
+
+  headingSource = source;
+  headingImu = (source == HeadingSource::Imu) ? imu : nullptr;
+
+  if (headingImu != nullptr) {
+    headingImu->reset(true);
+    const double rotation = headingImu->get_rotation();
+    imuHeadingOffset = pose.theta + (std::isfinite(rotation) ? rotation : 0.0);
+  }
+}
+
+// Returns the active heading feedback source.
+HeadingSource ChassisController::getHeadingSource() const {
+  return headingSource;
+}
+
 // Sets the default timeout windows for turn settling.
 void ChassisController::setDefaultTimeouts(int largeErrorMs, int smallErrorMs) {
   globalLargeErrorTimeoutMs = largeErrorMs;
@@ -130,12 +170,14 @@ void ChassisController::setDefaultTimeouts(int largeErrorMs, int smallErrorMs) {
 
 // Returns the current robot pose estimate.
 Pose2D ChassisController::getPose() const {
-  return pose;
+  Pose2D currentPose = pose;
+  currentPose.theta = readHeading();
+  return currentPose;
 }
 
 // Returns the current robot heading.
 double ChassisController::getHeading() const {
-  return pose.theta;
+  return readHeading();
 }
 
 // Returns the timestamp for the most recent OTOS update.
@@ -147,6 +189,13 @@ int ChassisController::getLastOtosUpdateMs() const {
 void ChassisController::setPose(Pose2D newPose) {
   pose = newPose;
   otosOriginSet = false;
+
+  if (headingSource == HeadingSource::Imu && headingImu != nullptr) {
+    const double rotation = headingImu->get_rotation();
+    if (std::isfinite(rotation)) {
+      imuHeadingOffset = newPose.theta + rotation;
+    }
+  }
 }
 
 // Applies a robot pose without resetting the OTOS origin.
@@ -190,7 +239,7 @@ void ChassisController::turnTo(double targetHeading, double maxSpeed, const Moti
   isRunning = true;
   wasCancelled = false;
 
-  const double startHeading = pose.theta;
+  const double startHeading = readHeading();
   const double headingError = std::remainder(targetHeading - startHeading, 360.0);
   const double absAngle = std::abs(headingError);
 
@@ -224,7 +273,7 @@ void ChassisController::turnTo(double targetHeading, double maxSpeed, const Moti
     if (dt < tuning.turnDtMin) dt = tuning.turnDtMin;
     t0 = now;
 
-    double current = pose.theta;
+    double current = readHeading();
     double error = std::remainder(targetHeading - current, 360.0);
     double absErr = std::abs(error);
 
@@ -285,7 +334,7 @@ void ChassisController::turnTo(double targetHeading, const MotionOptions& option
 // Drives a distance while holding the current heading.
 void ChassisController::driveDistance(float distance) {
   driveDistance(distance,
-                static_cast<float>(pose.theta),
+                static_cast<float>(readHeading()),
                 static_cast<float>(tuning.driveMaxVoltage),
                 static_cast<float>(tuning.headingMaxVoltage),
                 static_cast<float>(tuning.driveSettleError),
@@ -471,7 +520,7 @@ void ChassisController::driveDistance(float distance,
                (int)drive_timeout);
 
   auto get_absolute_heading = [&]() -> double {
-    return pose.theta;  // OTOS-backed
+    return readHeading();
   };
 
   auto reduce_negative_180_to_180 = [&](double deg) -> double {

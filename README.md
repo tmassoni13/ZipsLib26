@@ -1,6 +1,6 @@
 # ZipsLib
 
-ZipsLib is a PROS V5 robot code template for VURC Team ZIPS Akron Robotics. It is built around a reusable chassis controller, OTOS/Pi pose tracking, PID motion helpers, and a simple brain-screen autonomous selector.
+ZipsLib is a PROS V5 robot code template for VURC Team ZIPS Akron Robotics. It is built around a reusable chassis controller, selectable OTOS or V5 IMU heading feedback, PID motion helpers, and a simple brain-screen autonomous selector.
 
 ## What This Template Can Do
 
@@ -9,6 +9,7 @@ ZipsLib is a PROS V5 robot code template for VURC Team ZIPS Akron Robotics. It i
 - Drive with arcade or tank control during opcontrol.
 - Run PID-based absolute turns with angle-specific turn profiles.
 - Run PID-based drive-distance motions while holding a heading.
+- Select OTOS or a V5 IMU for turn and heading-hold feedback.
 - Use default tuning values or override PID, voltage, settle, and timeout settings per motion.
 - Run motion callbacks with `onStart`, `onApproach`, and `onExit`.
 - Receive pose updates from a Raspberry Pi or coprocessor over the PROS serial stream.
@@ -29,7 +30,30 @@ pros::MotorGroup rightDrive({19, -18, 17, 16}, pros::MotorGearset::blue);
 
 Use negative ports to reverse motors.
 
-### 2. Set Robot Constants
+### 2. Select the Heading Sensor
+
+In `chassisInit()`, select OTOS with one line:
+
+```cpp
+chassis.setHeadingSource(HeadingSource::Otos);
+```
+
+Or select and calibrate the V5 IMU with one line:
+
+```cpp
+chassis.setHeadingSource(HeadingSource::Imu, &chassisImu);
+```
+
+Set the IMU smart port above `chassisInit()`:
+
+```cpp
+pros::Imu chassisImu(11);
+```
+
+Drive distance is always measured by the drive motor encoders. This selection
+controls the heading feedback used by `turnTo()` and `driveDistance()`.
+
+### 3. Set Robot Constants
 
 In `chassisInit()`, update this block:
 
@@ -42,7 +66,7 @@ chassis.setRobotConstants({
 });
 ```
 
-### 3. Tune Motion Defaults
+### 4. Tune Motion Defaults
 
 Open `include/chassis/Tuning.hpp`.
 

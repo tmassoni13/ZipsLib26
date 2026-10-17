@@ -35,18 +35,17 @@ static void guiUpdateTask(void*) {
   while (true) {
     const int now = pros::millis();
     const int last = zips::chassis.getLastOtosUpdateMs();
-    const bool hasData = last >= 0 && (now - last) <= 500;
+    const bool hasOtosData = last >= 0 && (now - last) <= 500;
+    const bool hasHeadingData =
+      zips::chassis.getHeadingSource() == zips::HeadingSource::Imu || hasOtosData;
 
-    if (!hasData) {
+    if (!hasOtosData) {
       const char* xtext = "X: No Data";
       const char* ytext = "Y: No Data";
-      const char* ttext = "T: No Data";
       if (label_x) lv_label_set_text(label_x, xtext);
       if (label_y) lv_label_set_text(label_y, ytext);
-      if (label_theta) lv_label_set_text(label_theta, ttext);
       if (label_x_select) lv_label_set_text(label_x_select, xtext);
       if (label_y_select) lv_label_set_text(label_y_select, ytext);
-      if (label_theta_select) lv_label_set_text(label_theta_select, ttext);
     } else {
       zips::Pose2D pose = zips::chassis.getPose();
       char buf[64];
@@ -56,9 +55,17 @@ static void guiUpdateTask(void*) {
       std::snprintf(buf, sizeof(buf), "Y: %.2f", pose.y);
       if (label_y) lv_label_set_text(label_y, buf);
       if (label_y_select) lv_label_set_text(label_y_select, buf);
-      std::snprintf(buf, sizeof(buf), "T: %.2f", pose.theta);
+    }
+
+    if (hasHeadingData) {
+      char buf[64];
+      std::snprintf(buf, sizeof(buf), "T: %.2f", zips::chassis.getHeading());
       if (label_theta) lv_label_set_text(label_theta, buf);
       if (label_theta_select) lv_label_set_text(label_theta_select, buf);
+    } else {
+      const char* ttext = "T: No Data";
+      if (label_theta) lv_label_set_text(label_theta, ttext);
+      if (label_theta_select) lv_label_set_text(label_theta_select, ttext);
     }
 
     pros::delay(50);

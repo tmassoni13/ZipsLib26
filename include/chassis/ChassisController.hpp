@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "pros/imu.hpp"
 #include "pros/motor_group.hpp"
 #include "ChassisTypes.hpp"
 
@@ -28,6 +29,25 @@ public:
    * @param constants Wheel, rpm, track width, and voltage constants.
    */
   void setRobotConstants(const RobotConstants& constants);
+
+  /**
+   * @brief Selects the sensor used for heading feedback.
+   *
+   * Pass a configured IMU when selecting HeadingSource::Imu. The IMU is
+   * calibrated before it becomes active. Passing nullptr for the IMU safely
+   * falls back to OTOS heading.
+   *
+   * @param source Desired heading source.
+   * @param imu IMU to use, or nullptr when selecting OTOS.
+   */
+  void setHeadingSource(HeadingSource source, pros::Imu* imu = nullptr);
+
+  /**
+   * @brief Gets the selected heading source.
+   *
+   * @return Active heading source.
+   */
+  HeadingSource getHeadingSource() const;
 
   /**
    * @brief Stores PID gains for a turn angle profile.
@@ -232,7 +252,7 @@ public:
   Pose2D getPose() const;
 
   /**
-   * @brief Gets the current robot heading.
+   * @brief Gets the current heading from the selected heading source.
    *
    * @return Current heading in degrees.
    */

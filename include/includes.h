@@ -4,7 +4,7 @@
     Declares shared robot objects, auton functions, and GUI selection helpers.
 */
 
-#pragma once 
+#pragma once
 #include "pros/adi.hpp"
 #include "pros/misc.hpp"
 #include "pros/motor_group.hpp"
@@ -19,7 +19,6 @@ extern pros::Motor claw;
 extern pros::adi::Pneumatics clamp;
 extern pros::Rotation clawRotation;
 extern pros::Controller master;
-
 
 /**
  * @brief Runs the match autonomous routine.
