@@ -25,6 +25,7 @@ static void piLinkInitTask(void*) {
  */
 void initialize() {
   chassisInit();
+  liftInit();
   guiInit();
   // Run PiLink + calibration in a separate task but launched from initialize.
   pros::Task(piLinkInitTask, nullptr, TASK_PRIORITY_DEFAULT, 2048, "PiLinkInit");
@@ -90,6 +91,8 @@ void opcontrol() {
 		double turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
 		zips::chassis.control_arcade(forward, turn, 600);
+		intakeControl();
+		liftControl();
 		pros::delay(20);
 	}
 }
