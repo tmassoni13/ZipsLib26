@@ -7,17 +7,23 @@
 #include "Chassis/ChassisController.hpp"
 #include "Chassis/Tuning.hpp"
 
-//define motors
+// Define motors
 pros::MotorGroup leftDrive({-12, -13, 14, -15}, pros::MotorGearset::blue);
 pros::MotorGroup rightDrive({19, -18, 17, 16}, pros::MotorGearset::blue);
+
+// Define vex inertial sensor if not using OTOS
+// pros::Imu chassisImu(11);
 
 
 // Initializes the chassis motors, constants, timeouts, and turn profiles.
 void chassisInit() {
   using namespace zips;
 
-  //set drive motor groups
+  // Set drive motor groups
   chassis.setDriveMotors(&leftDrive, &rightDrive);
+
+  // Otos is only legal in VEXU, use HeadingSource::Imu for the vex inertial sensor for V5
+  chassis.setHeadingSource(HeadingSource::Otos);
 
   chassis.setRobotConstants({
     .wheelDiameter = 3.25,

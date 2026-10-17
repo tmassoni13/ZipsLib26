@@ -12,6 +12,11 @@
 
 namespace zips {
 
+  enum class HeadingSource {
+    Otos,
+    Imu
+  };
+
   // 2D pose struct with position and heading
   struct Pose2D {
     double x = 0.0;
