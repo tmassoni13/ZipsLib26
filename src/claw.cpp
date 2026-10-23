@@ -11,7 +11,7 @@
 pros::Motor claw(7, pros::MotorGearset::green);
 
 // Claw rotation sensor
-pros::Rotation clawRotation(8);
+pros::Rotation clawRotation(15);
 
 // Clamp piston
 pros::adi::Pneumatics clamp('A', false);
