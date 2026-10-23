@@ -8,10 +8,10 @@
 #include "pros/rotation.hpp"
 
 // Claw motor
-pros::Motor claw(7, pros::MotorGearset::green);
+pros::Motor claw(25, pros::MotorGearset::green);
 
 // Claw rotation sensor
-pros::Rotation clawRotation(15);
+pros::Rotation clawRotation(25);
 
 // Clamp piston
 pros::adi::Pneumatics clamp('A', false);
