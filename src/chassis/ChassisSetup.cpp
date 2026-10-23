@@ -8,8 +8,8 @@
 #include "Chassis/Tuning.hpp"
 
 // Define motors
-pros::MotorGroup leftDrive({-12, -13, 14, -15}, pros::MotorGearset::blue);
-pros::MotorGroup rightDrive({19, -18, 17, 16}, pros::MotorGearset::blue);
+pros::MotorGroup leftDrive({-7, -8, 9, -10}, pros::MotorGearset::blue);
+pros::MotorGroup rightDrive({1, -2, 3, 4}, pros::MotorGearset::blue);
 
 // Define vex inertial sensor if not using OTOS
 // pros::Imu chassisImu(11);
