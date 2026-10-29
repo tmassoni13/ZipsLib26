@@ -12,7 +12,7 @@
 #include <cstdint>
 
 // Lift motors
-pros::MotorGroup lift({25, -25}, pros::MotorGearset::green, pros::MotorUnits::rotations);
+pros::MotorGroup lift({13, -14,15}, pros::MotorGearset::green, pros::MotorUnits::rotations);
 
 // Lift states using IME rotation values
 const std::array<double, 7> liftHeights = {0.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0};
