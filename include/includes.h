@@ -16,6 +16,7 @@ extern pros::MotorGroup rightDrive;
 extern pros::MotorGroup intake;
 extern pros::MotorGroup lift;
 extern pros::Motor claw;
+extern pros::Motor toggle;
 extern pros::adi::Pneumatics clamp;
 extern pros::Rotation clawRotation;
 extern pros::Controller master;

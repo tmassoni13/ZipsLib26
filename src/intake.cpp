@@ -20,9 +20,12 @@ void setIntake(int speed) {
 void intakeControl() {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
         setIntake(127);
+        toggle.move(127);
     } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
         setIntake(-127);
+        toggle.move(127);
     } else {
         setIntake(0);
+        toggle.move(0);
     }
 }

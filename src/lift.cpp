@@ -12,7 +12,8 @@
 #include <cstdint>
 
 // Lift motors
-pros::MotorGroup lift({13, -14,-15}, pros::MotorGearset::green, pros::MotorUnits::rotations);
+pros::MotorGroup lift({13, -14, -15}, pros::MotorGearset::green, pros::MotorUnits::rotations);
+
 // Lift states using IME rotation values
 // const std::array<double, 7> liftHeights = {0.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0};
 
@@ -32,9 +33,11 @@ pros::MotorGroup lift({13, -14,-15}, pros::MotorGearset::green, pros::MotorUnits
 // bool l1WasHeld = false;
 // std::uint32_t l1PressTime = 0;
 
-// // Returns current position of the lift
+// // Returns the average position of all three lift motors
 // double getLiftPosition() {
-//   return (lift.get_position(0) + lift.get_position(1)) / 2.0;
+//   return (lift.get_position(0) +
+//           lift.get_position(1) +
+//           lift.get_position(2)) / 3.0;
 // }
 
 // // Configure lift motors, zero the encoders, and resets all control states
@@ -95,4 +98,3 @@ void liftControl() {
     lift.move_voltage(0);
   }
 }
-
