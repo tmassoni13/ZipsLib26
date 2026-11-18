@@ -90,7 +90,7 @@ void opcontrol() {
 		double forward = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 		double turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-		zips::chassis.control_arcade(forward, turn, 600);
+		zips::chassis.control_arcade(forward, turn, 0);
 		intakeControl();
 		liftControl();
 		pros::delay(20);
