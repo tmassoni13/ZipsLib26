@@ -1,11 +1,11 @@
 /*
-    intake.cpp
+    toggle.cpp
 
-    Intake code for match and autonomous
+    toggle code for match and autonomous
 */
 
 #include "includes.h"
 #include "pros/abstract_motor.hpp"
 
-// Intake motors
+// toggle motor
 pros::Motor toggle(-5, pros::MotorGearset::green);
