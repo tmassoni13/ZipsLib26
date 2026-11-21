@@ -9,7 +9,7 @@
 #include "pros/misc.h"
 
 // Intake motors
-pros::MotorGroup intake({11, -12, 16, -18}, pros::MotorGearset::blue);
+pros::MotorGroup intake({11, -12, -17, 16}, pros::MotorGearset::blue);
 
 // Sets the intake speed (-127 to 127)
 void setIntake(int speed) {
