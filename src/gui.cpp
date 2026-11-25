@@ -14,6 +14,9 @@
 static lv_obj_t* label_x = nullptr;
 static lv_obj_t* label_y = nullptr;
 static lv_obj_t* label_theta = nullptr;
+static lv_obj_t* label_lift_0 = nullptr;
+static lv_obj_t* label_lift_1 = nullptr;
+static lv_obj_t* label_lift_2 = nullptr;
 static lv_obj_t* label_x_select = nullptr;
 static lv_obj_t* label_y_select = nullptr;
 static lv_obj_t* label_theta_select = nullptr;
@@ -67,6 +70,14 @@ static void guiUpdateTask(void*) {
       if (label_theta) lv_label_set_text(label_theta, ttext);
       if (label_theta_select) lv_label_set_text(label_theta_select, ttext);
     }
+
+    char liftBuf[32];
+    std::snprintf(liftBuf, sizeof(liftBuf), "Lift[0]: %.2f", lift.get_position(0));
+    if (label_lift_0) lv_label_set_text(label_lift_0, liftBuf);
+    std::snprintf(liftBuf, sizeof(liftBuf), "Lift[1]: %.2f", lift.get_position(1));
+    if (label_lift_1) lv_label_set_text(label_lift_1, liftBuf);
+    std::snprintf(liftBuf, sizeof(liftBuf), "Lift[2]: %.2f", lift.get_position(2));
+    if (label_lift_2) lv_label_set_text(label_lift_2, liftBuf);
 
     pros::delay(50);
   }
@@ -170,6 +181,21 @@ void guiInit() {
   lv_obj_add_style(screen_default, &style_screen, 0);
 
   create_pose_labels(screen_default, &label_x, &label_y, &label_theta);
+
+  label_lift_0 = lv_label_create(screen_default);
+  lv_label_set_text(label_lift_0, "Lift[0]: 0.00");
+  lv_obj_align(label_lift_0, LV_ALIGN_BOTTOM_LEFT, 12, -52);
+  lv_obj_add_style(label_lift_0, &style_text, 0);
+
+  label_lift_1 = lv_label_create(screen_default);
+  lv_label_set_text(label_lift_1, "Lift[1]: 0.00");
+  lv_obj_align(label_lift_1, LV_ALIGN_BOTTOM_LEFT, 12, -32);
+  lv_obj_add_style(label_lift_1, &style_text, 0);
+
+  label_lift_2 = lv_label_create(screen_default);
+  lv_label_set_text(label_lift_2, "Lift[2]: 0.00");
+  lv_obj_align(label_lift_2, LV_ALIGN_BOTTOM_LEFT, 12, -12);
+  lv_obj_add_style(label_lift_2, &style_text, 0);
 
   right_box = create_outline_button(screen_default, 140, 50);
   lv_obj_set_size(right_box, 120, 50);
